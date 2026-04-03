@@ -51,3 +51,5 @@ Thumbs.db
 
 # Alembic — keep migrations, ignore generated pycache only
 migrations/__pycache__/
+
+.docs/

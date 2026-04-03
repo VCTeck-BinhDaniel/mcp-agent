@@ -23,6 +23,22 @@ services:
       db:
         condition: service_healthy
 
+  mcp:
+    build: .
+    command: python app/core/mcp/server/server.py
+    ports:
+      - "6969:6969"
+    volumes:
+      - ./app:/app/app # hot-reload MCP server source
+    restart: unless-stopped
+    healthcheck:
+      # TCP check: just verify port 6969 is open (more reliable than HTTP GET for FastMCP)
+      test: [ "CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.settimeout(3); s.connect(('localhost',6969)); s.close()\"" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
   app:
     build: .
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -31,12 +47,15 @@ services:
     env_file: .env
     environment:
       POSTGRES_HOST: db
+      MCP_SERVER_URL: "http://mcp:6969/mcp" # internal Docker network
     volumes:
       - ./app:/app/app # only sync source code
       - ./alembic:/app/alembic # only sync migrations
     depends_on:
       migrate:
         condition: service_completed_successfully
+      mcp:
+        condition: service_healthy # wait until MCP port is actually open
     restart: unless-stopped
 
   frontend:

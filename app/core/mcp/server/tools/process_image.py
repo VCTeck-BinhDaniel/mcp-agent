@@ -5,6 +5,8 @@ import httpx
 from fastmcp import Context
 from fastmcp.tools import tool
 
+from app.core.mcp.server.tools.ctx_log import ctx_debug, ctx_error, ctx_info
+
 
 @tool()
 async def process_image(
@@ -12,7 +14,7 @@ async def process_image(
     ctx: Context,
 ) -> dict:
     """Fetch an image from a URL and convert it to Base64 format so the AI can easily understand it."""
-    await ctx.info(f"Fetching image from {image_url}")
+    await ctx_info(ctx, f"Fetching image from {image_url}")
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -31,7 +33,8 @@ async def process_image(
 
             base64_encoded = base64.b64encode(image_bytes).decode("utf-8")
 
-            await ctx.debug(
+            await ctx_debug(
+                ctx,
                 "Image fetched and encoded successfully",
                 extra={"mime_type": content_type, "length": len(image_bytes)},
             )
@@ -44,7 +47,7 @@ async def process_image(
                 "data_uri": f"data:{content_type};base64,{base64_encoded}",
             }
     except Exception as e:
-        await ctx.error(f"Failed to fetch or process image: {str(e)}")
+        await ctx_error(ctx, f"Failed to fetch or process image: {str(e)}")
         return {
             "status": "error",
             "message": f"Failed to fetch or process image: {str(e)}",

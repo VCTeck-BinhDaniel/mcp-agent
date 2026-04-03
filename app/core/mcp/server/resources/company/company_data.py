@@ -11,7 +11,7 @@ Scale: Grown from 4 members to a mid-to-large enterprise with ~101-200 employees
 Headquarters: 54 St Patrick St & 439 University Avenue (Suite 780), Toronto, Ontario, Canada.
 Financials: Estimated Revenue ~$35,000,000 USD. Estimated Valuation ~$112,000,000 USD. Backed by TA Associates.
 Global Network: Present across 4 continents with Regional Directors/Reps in Australia, Africa, Latin America, India, Brazil, Indonesia, Malaysia, UK & Ireland, South East Europe. Supports 10,000+ users worldwide.
-Leadership: 
+Leadership:
 - Thamer Yacoub (CEO)
 - Brent Corkum (CTO)
 - Dr. John Curran (Founder/Board Member)

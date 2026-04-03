@@ -4,6 +4,7 @@ import httpx
 from fastmcp import Context
 from fastmcp.tools import tool
 
+from app.core.mcp.server.tools.ctx_log import ctx_info
 from app.utils.config import settings
 
 
@@ -20,7 +21,7 @@ async def read_webpage(
     Extracts clean, readable Markdown content from a webpage URL using Jina AI.
     Perfect for reading articles, documentation, or extracting text from a website.
     """
-    await ctx.info(f"Extracting webpage content from {url}")
+    await ctx_info(ctx, f"Extracting webpage content from {url}")
     jina_api_key = settings.JINA_API_KEY
     jina_url = f"https://r.jina.ai/{url}"
 

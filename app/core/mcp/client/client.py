@@ -4,7 +4,7 @@ from typing import Any
 
 from fastmcp.client import Client
 
-SERVER_URL = "http://localhost:8000/mcp"
+SERVER_URL = "http://localhost:6969/mcp"
 
 
 def _pretty(value: Any) -> str:

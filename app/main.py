@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import router as v1_router
+from app.core.agent.agent import agent
 from app.utils.config import settings
 from app.utils.logger import get_logger
 
@@ -13,8 +14,10 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up %s ...", settings.APP_NAME)
+    await agent.initialize()
     yield
     logger.info("Shutting down %s ...", settings.APP_NAME)
+    await agent.shutdown()
 
 
 def create_app() -> FastAPI:

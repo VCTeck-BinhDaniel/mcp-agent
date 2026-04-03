@@ -37,7 +37,14 @@ class Settings(BaseSettings):
     # ── Gemini (OpenAI-compatible endpoint, fallback) ────
     GEMINI_API_KEY: str = ""
     GEMINI_API_URL: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-"
+
+    # ── Jina AI ──────────────────────────────────────────
+    JINA_API_KEY: str = ""
+
+    # ── MCP ──────────────────────────────────────────────
+    MCP_SERVER_URL: str = "http://localhost:6969/mcp"
+    MCP_SERVER_TOKEN: str = ""
 
 
 settings = Settings()

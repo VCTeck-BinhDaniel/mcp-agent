@@ -8,7 +8,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.agent import agent
+from app.core.agent.agent import agent
 from app.db.crud import MessageRepository, SessionOwnershipError, SessionRepository
 from app.db.database import AsyncSessionLocal, get_db
 from app.db.models import ChatSession, MessageRole

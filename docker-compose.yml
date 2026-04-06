@@ -25,7 +25,8 @@ services:
 
   mcp:
     build: .
-    command: python app/core/mcp/server/server.py
+    command: uv run app/core/mcp/server/server.py
+    env_file: .env
     ports:
       - "6969:6969"
     volumes:
@@ -60,7 +61,7 @@ services:
 
   frontend:
     build: .
-    command: python -m streamlit run demo.py --server.port 8501 --server.address 0.0.0.0
+    command: uv run streamlit run demo.py --server.port 8501 --server.address 0.0.0.0
     ports:
       - "8501:8501"
     environment:

@@ -37,8 +37,12 @@ logger = logging.getLogger(__name__)
 
 _INSTRUCTIONS = (
     "You are a helpful, friendly, and concise AI assistant. "
-    "Answer clearly and accurately. If you don't know something, say so. "
-    "Use the MCP server available to assist the user."
+    "Answer clearly and accurately. If you don't know something, say so.\n\n"
+    "You have MCP tools including `web_search` (live web search) and `read_webpage` (fetch one URL). "
+    "When the user asks for news, current facts, or anything that depends on the public internet, "
+    "you MUST call `web_search` with a focused `query` (any language, e.g. Vietnamese) BEFORE you answer. "
+    "Do not say you are searching or pretend to have search results without actually invoking `web_search`. "
+    "After you receive tool output, summarize it for the user and cite key sources when helpful."
 )
 
 

@@ -7,20 +7,18 @@ sys.path.append(os.getcwd())
 
 from fastmcp import FastMCP
 from fastmcp.server.providers import FileSystemProvider
+from fastmcp.server.transforms import PromptsAsTools, ResourcesAsTools
 from fastmcp.utilities.logging import get_logger
 from prefab_ui.app import PrefabApp
 from prefab_ui.components import Badge, Column, Heading, Row, Text
 
-# NOTE: MCP resources are disabled — openai-agents-sdk does not support the
-# resources/read protocol. Company data is embedded directly in the tool.
-# from app.core.mcp.server.resources.company.company_data import (
-#     CULTURE_AND_COMMUNITY,
-#     HISTORY_AND_ORIGINS,
-#     ORGANIZATION_AND_LEADERSHIP,
-#     PRODUCTS_AND_SOLUTIONS,
-#     STRATEGY_AND_INNOVATION,
-# )
+from app.core.mcp.server.prompts.datetime_prompt import current_datetime
+from app.core.mcp.server.prompts.rocscience import lookup_rocscience_docs
+from app.core.mcp.server.prompts.thinking import think_step_by_step
+from app.core.mcp.server.resources.company.server import company_server
+from app.core.mcp.server.tools.web_reader import jina_reader
 
+# MCP client logs (ctx.debug/info/...) also go to this logger at DEBUG — see .docs/server/logging.md
 to_client_logger = get_logger(name="fastmcp.server.context.to_client")
 to_client_logger.setLevel(level=logging.DEBUG)
 
@@ -32,37 +30,28 @@ provider = FileSystemProvider(
 
 mcp = FastMCP("Rocscience MCP Server", providers=[provider])
 
+# ── Tools ────────────────────────────────────────────────────────────────────
 
-# ── Company resources (disabled: openai-agents-sdk does not support MCP resources) ──
+mcp.add_tool(jina_reader.read_webpage)
+mcp.add_tool(jina_reader.web_search)
 
-# @mcp.resource("rocscience://company/history")
-# def company_history() -> str:
-#     """Get Rocscience history and origins."""
-#     return HISTORY_AND_ORIGINS.strip()
+# ── Resources (company data) ──────────────────────────────────────────────────
+# Full MCP clients use resources/read. Tool-only clients use read_resource via
+# ResourcesAsTools (below). URIs: rocscience://company/* from company_server.
 
+mcp.mount(company_server)
 
-# @mcp.resource("rocscience://company/organization")
-# def company_organization() -> str:
-#     """Get Rocscience organization info, scale, and leadership."""
-#     return ORGANIZATION_AND_LEADERSHIP.strip()
+# ── Prompts ───────────────────────────────────────────────────────────────────
 
+mcp.add_prompt(lookup_rocscience_docs)
+mcp.add_prompt(think_step_by_step)
+mcp.add_prompt(current_datetime)
 
-# @mcp.resource("rocscience://company/products")
-# def company_products() -> str:
-#     """Get Rocscience product ecosystem details."""
-#     return PRODUCTS_AND_SOLUTIONS.strip()
+# ── Tool-only clients (e.g. openai-agents-sdk) ────────────────────────────────
+# Exposes list_prompts / get_prompt and list_resources / read_resource as tools.
 
-
-# @mcp.resource("rocscience://company/strategy")
-# def company_strategy() -> str:
-#     """Get Rocscience M&A strategy and innovation initiatives."""
-#     return STRATEGY_AND_INNOVATION.strip()
-
-
-# @mcp.resource("rocscience://company/culture")
-# def company_culture() -> str:
-#     """Get Rocscience corporate culture and community events."""
-#     return CULTURE_AND_COMMUNITY.strip()
+mcp.add_transform(PromptsAsTools(mcp))
+mcp.add_transform(ResourcesAsTools(mcp))
 
 
 # ── UI tools ─────────────────────────────────────────────────────────────────

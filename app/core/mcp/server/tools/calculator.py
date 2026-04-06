@@ -16,6 +16,7 @@ async def calculate(
     ctx: Context,
 ) -> float:
     """
+    FORCE TO USE THIS TOOL FOR CALCULATING ANY MATH FORMULA.
     Evaluate a mathematical expression.
     Supports operators: +, -, *, /, **, %
     Supports math functions: sqrt, sin, cos, tan, log, pi, e, etc.

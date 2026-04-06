@@ -14,13 +14,15 @@ which propagates through the session TaskGroup and crashes the entire session.
 These helpers swallow transport-layer exceptions so ctx logging is always safe
 to use inside tools, while still relying on the server-side
 `fastmcp.server.context.to_client` logger for observability.
+
+See `.docs/server/logging.md`: client-visible logs use ctx.*; fallback uses
+FastMCP's server-side get_logger (not the app-wide logger).
 """
 
-import logging
-
 from fastmcp import Context
+from fastmcp.utilities.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 async def ctx_debug(ctx: Context, message: str, **kwargs) -> None:

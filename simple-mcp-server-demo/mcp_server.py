@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import sys
 from datetime import UTC, datetime
 from typing import Annotated
@@ -8,17 +9,31 @@ sys.path.append(os.getcwd())
 
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-import httpx
 from fastmcp import Context, FastMCP
 from fastmcp.server.transforms import PromptsAsTools, ResourcesAsTools
 from simple_operators import SAFE_GLOBALS
-
-from app.utils.config import settings
 
 mcp = FastMCP("test_mcp_server")
 
 
 @mcp.prompt(
+    name="plan_mode",
+    description="""
+    Force to use them when the user is planning or having a difficult task to implement.
+    """,
+)
+async def plan_mode(ctx: Context) -> str:
+    await ctx.info("Planning mode")
+    return """
+    You are a planning specialist.
+    Your job is to carefully read and explore the codebase using only read-only tools (find, grep, cat, ls).
+    Do not write, edit, or move any files—planning only. For difficult tasks, analyze requirements and architecture,
+    propose a step-by-step implementation plan, discuss trade-offs and dependencies, and anticipate challenges.
+    At the end, list 3–5 files as "Critical Files for Implementation". No code, only planning and recommendations.
+    """
+
+
+@mcp.tool(
     name="current_datetime",
     description=(
         "FORCE TO BE USE FOR ANY QUESTION THAT IS RELATED TO TIME, DATE, OR ANYTHING THAT IS TIME-SENSITIVE."
@@ -27,11 +42,14 @@ mcp = FastMCP("test_mcp_server")
     ),
     tags={"time", "datetime", "context"},
 )
-def current_datetime(
-    iana_timezone: str | None = None,
+async def current_datetime(
+    ctx: Context,
+    iana_timezone: Annotated[
+        str | None, "The IANA timezone to use for the current datetime"
+    ],
 ) -> str:
     """Return the current UTC, server-local, and optional IANA-zone time."""
-
+    await ctx.info(f"Fetching current datetime with timezone: {iana_timezone}")
     tz = (iana_timezone or "").strip() or None
     utc_now = datetime.now(UTC)
     utc_block = utc_now.strftime("UTC: %A, %B %d, %Y %I:%M %p (UTC)")
@@ -114,47 +132,20 @@ async def calculator(
 
 
 @mcp.tool(
-    name="web_search",
-    description=(
-        "Search the live web via Jina."
-        "Returns search response text from the API."
-        "Some information that your dont have enough knowledge about, you can use this tool to search the web for information."
-    ),
-    tags={"search", "jina", "web"},
+    name="roll_dice",
+    description="Roll a standard six-sided die (D6) and return the result (1-6).",
+    tags={"dice", "random", "utility"},
 )
-async def web_search(
-    query: Annotated[
-        str, "Search keywords or question; Unicode (e.g. Vietnamese) is supported"
-    ],
-    ctx: Context,
-    limit: Annotated[
-        int | None,
-        "Optional max results (1-10); omit for API default",
-    ] = None,
-) -> str:
-    await ctx.info(f"Searching the web for: {query}")
+async def roll_dice(ctx: Context) -> int:
+    """
+    Rolls a six-sided die and returns the result.
 
-    params = {"q": query}
-    if limit is not None:
-        params["num"] = max(1, min(int(limit), 10))
-
-    headers = {
-        "Accept": "application/json",
-        "X-Respond-With": "no-content",
-        "Authorization": f"Bearer {settings.JINA_API_KEY}",
-    }
-
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                "https://s.jina.ai/",
-                params=params,
-                headers=headers,
-            )
-            response.raise_for_status()
-            return response.text
-    except Exception:
-        return "Web search failed."
+    Returns:
+        int: A random number between 1 and 6.
+    """
+    result = random.randint(1, 6)
+    await ctx.info(f"Rolled a dice and got: {result}")
+    return result
 
 
 mcp.add_transform(PromptsAsTools(mcp))
